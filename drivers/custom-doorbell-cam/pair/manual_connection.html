@@ -1,0 +1,89 @@
+</br>
+<p data-i18n="pair.manual_add.intro" style="text-align:center;"></p>
+
+<form id="form" name="form" onsubmit="return getForm()" action="javascript:void(0);" method="post"
+    style="text-align:left;">
+    <div class="form-group">
+        <label for="snapshot_url" data-i18n="pair.manual_add.snapshot_url"></label>
+        <input type="text" name="snapshot_url" id="snapshot_url" style="margin-top: 3px;" />
+        <label for="ws_url" data-i18n="pair.manual_add.ws_url"></label>
+        <input type="text" name="ws_url" id="ws_url" style="margin-top: 3px;" />
+        </br>
+        <button type="submit" id="submit"
+            style="width: 100%; margin: 15px 0; padding: 10px; text-align:center; color: white; background-color: DodgerBlue;border-radius: 10px">
+            Connect
+        </button>
+        </br>
+        </br>
+        <input type="text" id="status" readonly style="border: none" />
+    </div>
+</form>
+
+
+<script type="text/javascript">
+    Homey.setTitle(__('pair.manual_add.title'));
+
+    // Homey.emit('manual_connection_setup', {},
+    //     function (err, result) {
+    //         if (result) {
+    //             if (result.snapshot_url) {
+    //                 document.getElementById('snapshot_url').value = result.snapshot_url;
+    //             }
+    //             if (result.ws_url) {
+    //                 document.getElementById('ws_url').value = result.ws_url;
+    //             }
+    //         }
+    //     }
+    // );
+
+    function getForm() {
+        // Mark as authenticating
+        document.getElementById('submit').disabled = 'disabled';
+        document.getElementById('submit').value = __('pair.manual_add.checking');
+        document.getElementById('status').style.color = 'orange';
+        document.getElementById('status').value = 'Connecting...';
+
+        Homey.emit('manual_connection',
+            {
+                snapshot_url: document.forms["form"]["snapshot_url"].value,
+                ws_url: document.forms["form"]["ws_url"].value
+            },
+            function (err, result) {
+                if (err) {
+                    console.log('connection failed');
+                    document.getElementById('submit').disabled = false;
+                    document.getElementById('submit').value = __('pair.manual_add.try_again');
+                    document.getElementById('status').value = err;
+                    document.getElementById('status').style.color = 'red';
+                }
+                else {
+                    console.log('connection succeeded');
+                    document.getElementById('submit').value = __('pair.manual_add.correct');
+                    document.getElementById('status').value = __('pair.manual_add.adding');
+                    document.getElementById('status').style.color = 'green';
+                    if (!result) {
+                        Homey.showView("list_devices2");
+                    }
+                    else if (result === true) {
+                        console.log(addResult);
+                        Homey.done();
+                    }
+                    else {
+                        Homey.addDevice(result, function (addErr, addResult) {
+                            if (addErr) {
+                                console.error(addErr);
+                                document.getElementById('submit').disabled = false;
+                                document.getElementById('submit').value = __('pair.manual_add.try_again');
+                                document.getElementById('status').value = addErr;
+                                document.getElementById('status').style.color = 'red';
+                            }
+                            else {
+                                console.log(addResult);
+                                Homey.done();
+                            }
+                        });
+                    }
+                }
+            });
+    }
+</script>
