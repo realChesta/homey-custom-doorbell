@@ -15,15 +15,32 @@ class DoorbellCamera extends Homey.Device {
   async onInit() {
     this.log('DoorbellCamera has been initialized');
     await this.updateSnapshot();
-    this.socket = new WebSocket(this.getSettings().ws_url)
-    this.tryConnect()
+    this.tryConnect(true);
   }
 
-  async tryConnect() {
-    this.log("Connecting ws...");
-    this.socket = new WebSocket(this.getSettings().ws_url)
+  async tryConnect(retry: boolean = false) {
+    this.log("Connecting ws on " + this.getSettings().ws_url);
+    this.socket = new WebSocket(this.getSettings().ws_url);
+    this.socket.onerror = async (event: WebSocket.ErrorEvent) => {
+      if (retry) {
+        this.log("ws connection failed, retrying in 5 seconds!");
+        await this.setUnavailable();
+        await new Promise((resolve, _) => setTimeout(resolve, 5000));
+        await this.tryConnect(retry);
+      }
+      else {
+        this.log("ws connection failed, not retrying!");
+      }
+    };
+
     this.socket.on('open', () => {
       this.log("ws connected!");
+      this.setAvailable();
+
+      this.socket?.on('close', async () => {
+        this.setUnavailable('WebSocket was disconnected!');
+        await this.tryConnect(true);
+      });
     });
 
     this.socket.on('message', (data) => {
@@ -32,17 +49,14 @@ class DoorbellCamera extends Homey.Device {
       switch (msg) {
         case 'motion-start':
           // TODO: set motion-alert to true
+          this.setCapabilityValue('alarm_motion', true);
           break;
 
         case 'motion-end':
           // TODO: set motion-alert to false
+          this.setCapabilityValue('alarm_motion', false);
           break;
       }
-    });
-
-    this.socket.on('close', () => {
-      this.setUnavailable('WebSocket was disconnected!');
-      this.tryConnect();
     });
   }
 
