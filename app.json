@@ -26,6 +26,48 @@
     "name": "Kyrill 🌵",
     "email": "kyrill.hux@gmail.com"
   },
+  "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "Someone is at the door"
+        },
+        "hint": {
+          "en": "When someone rings the bell and the doorbell video starts."
+        },
+        "id": "at_door"
+      },
+      {
+        "title": {
+          "en": "Snapshot taken"
+        },
+        "hint": {
+          "en": "Triggers when a snapshot has been taken by the \"Take snapshot\" flow card."
+        },
+        "tokens": [
+          {
+            "type": "image",
+            "name": "snapshot",
+            "title": {
+              "en": "Snapshot"
+            },
+            "example": {
+              "en": "A snapshot image of the current video feed."
+            }
+          }
+        ],
+        "id": "snapshot_taken"
+      }
+    ],
+    "actions": [
+      {
+        "title": {
+          "en": "Take snapshot"
+        },
+        "id": "take_snapshot"
+      }
+    ]
+  },
   "drivers": [
     {
       "name": {

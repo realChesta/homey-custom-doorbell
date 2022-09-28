@@ -1,0 +1,20 @@
+{
+  "title": {
+    "en": "Snapshot taken"
+  },
+  "hint": {
+    "en": "Triggers when a snapshot has been taken by the \"Take snapshot\" flow card."
+  },
+  "tokens": [
+    {
+      "type": "image",
+      "name": "snapshot",
+      "title": {
+        "en": "Snapshot"
+      },
+      "example": {
+        "en": "A snapshot image of the current video feed."
+      }
+    }
+  ]
+}

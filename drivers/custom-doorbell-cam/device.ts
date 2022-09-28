@@ -16,6 +16,15 @@ class DoorbellCamera extends Homey.Device {
     this.log('DoorbellCamera has been initialized');
     await this.updateSnapshot();
     this.tryConnect(true);
+
+    this.homey.flow.getActionCard('take_snapshot').registerRunListener(async (args, state) => {
+      this.log("Taking snapshot from flow!");
+      await this.updateSnapshot();
+      if (this.snapshotImage) {
+        this.log("Triggering snapshot card!");
+        this.homey.flow.getTriggerCard('snapshot_taken').trigger({snapshot: this.snapshotImage});
+      }
+    });
   }
 
   async tryConnect(retry: boolean = false) {
@@ -43,13 +52,14 @@ class DoorbellCamera extends Homey.Device {
       });
     });
 
-    this.socket.on('message', (data) => {
+    this.socket.on('message', async (data) => {
       const msg = data.toString();
       this.log('received ' + msg);
       switch (msg) {
         case 'motion-start':
           // TODO: set motion-alert to true
           this.setCapabilityValue('alarm_motion', true);
+          await this.homey.flow.getTriggerCard('at_door').trigger();
           break;
 
         case 'motion-end':
@@ -123,6 +133,10 @@ class DoorbellCamera extends Homey.Device {
     this.log("Registering snapshot image (" + this.name + ")");
     this.setCameraImage('snapshot', "Snapshot", this.snapshotImage).catch(this.err);
     this.log("registered snapshot image (" + this.name + ")");
+  }
+
+  async getSnapshot() {
+    
   }
 }
 
